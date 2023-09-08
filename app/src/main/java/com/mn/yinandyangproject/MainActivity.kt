@@ -6,27 +6,35 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.mn.yinandyangproject.ui.theme.YinAndYangProjectTheme
 
@@ -128,25 +136,21 @@ fun YinAndYang(
     radiusBigDots: Float = LocalDensity.current.run { radius.toPx() } / 20,
     radiusSmallDots: Float = LocalDensity.current.run { radius.toPx() } / 80,
 ) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
+    BoxWithConstraints(modifier = modifier) {
         //Draw Yang side
-        YinYangHalf(
-            modifier = Modifier.padding(16.dp),
+        YinOrYangSide(
             size = radius,
-            halfColor = Color.Black,
+            sideColor = Color.Black,
             dotColor = Color.White,
             angle = angle,
             radiusBigDot = radiusBigDots,
             radiusSmallDot = radiusSmallDots,
         )
         //Draw Yin side
-        YinYangHalf(
-            modifier = Modifier.wrapContentSize().padding(16.dp),
+        YinOrYangSide(
+            modifier = Modifier.padding(start = radius / 4),
             size = radius,
-            halfColor = Color.White,
+            sideColor = Color.White,
             dotColor = Color.Black,
             angle = angle + 180f,
             radiusBigDot = radiusBigDots,
@@ -155,13 +159,128 @@ fun YinAndYang(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun PepsiWithYinAndYangShapes(
+    modifier: Modifier = Modifier,
+    radius: Dp = 300.dp
+) {
+    Box(
+        modifier = Modifier
+//            .fillMaxWidth()
+            .wrapContentSize(Alignment.Center)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(radius)
+                .clip(CircleShape)
+                .background(Color.White)
+        )
+        Box(
+            modifier = Modifier
+                .size(radius)
+                .rotate(20f)
+                .clip(YinOrYangSideShape())
+                .background(Color.Red)
+        )
+
+        Box(
+            modifier = Modifier
+                .size(radius)
+                .rotate(240f)
+                .clip(YinOrYangSideShape())
+                .background(Color.Blue)
+        )
+
+    }
+//    Box(
+//        modifier = Modifier.fillMaxWidth(),
+//    ) {
+//        //Draw Yang side
+//        YinOrYangSide(
+//            size = radius,
+//            sideColor = Color.Black,
+//            dotColor = Color.White,
+//            angle = angle,
+//            radiusBigDot = radiusBigDots,
+//            radiusSmallDot = radiusSmallDots,
+//        )
+//        //Draw Yin side
+//        YinOrYangSide(
+//            modifier = Modifier.padding(start = radius / 4),
+//            size = radius,
+//            sideColor = Color.White,
+//            dotColor = Color.Black,
+//            angle = angle + 180f,
+//            radiusBigDot = radiusBigDots,
+//            radiusSmallDot = radiusSmallDots,
+//        )
+//        YinOrYangSide(
+//            size = radius,
+//            sideColor = Color.Red,
+//            dotColor = Color.White,
+//            angle = angle + 90f,
+//            radiusBigDot = radiusBigDots,
+//            radiusSmallDot = radiusSmallDots,
+//        )
+//    }
+}
+
+class YinOrYangSideShape : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
+    ): Outline {
+        val center = Offset(size.width / 2, size.height / 2)
+        val radius = minOf(size.width, size.height) / 2
+        val path = Path().apply {
+            arcTo(
+                Rect(
+                    center.x - radius,
+                    center.y - radius,
+                    center.x + radius,
+                    center.y + radius
+                ),
+                90f,
+                180f,
+                false
+            )
+            arcTo(
+                Rect(
+                    center.x - radius / 2,
+                    center.y - radius,
+                    center.x + radius / 2,
+                    center.y
+                ),
+                270f,
+                180f,
+                false
+            )
+            arcTo(
+                Rect(
+                    center.x - radius / 2,
+                    center.y,
+                    center.x + radius / 2,
+                    center.y + radius
+                ),
+                270f,
+                -180f,
+                false
+            )
+            close()
+        }
+        return Outline.Generic(path)
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
-fun YinYangHalf(
+fun YinOrYangSide(
     modifier: Modifier = Modifier,
     size: Dp = 200.dp,
-    halfColor: Color = Color.Black,
+    sideColor: Color = Color.Black,
     dotColor: Color = Color.White,
     angle: Float = 0f,
     radiusBigDot: Float = LocalDensity.current.run { size.toPx() } / 20,
@@ -169,10 +288,11 @@ fun YinYangHalf(
 ) {
     Canvas(
         modifier = modifier
-            .requiredSize(size)
+            .requiredWidth(size - size / 4)
+            .requiredHeight(size)
             .rotate(angle)
     ) {
-        val canvasSize = this.size.minDimension
+        val canvasSize = this.size.maxDimension
         val center = Offset(canvasSize / 2, canvasSize / 2)
         val radius = canvasSize / 2
         val path = Path().apply {
@@ -214,14 +334,14 @@ fun YinYangHalf(
 
         val dotCenter = Offset(center.x, center.y - radius / 2)
         //Draw a half Yin & Yang
-        drawPath(path, color = halfColor)
+        drawPath(path, color = sideColor)
         //Draw the dot inside the path with the dotColor
         drawCircle(
             dotColor, center = dotCenter, radius = radiusBigDot
         )
-        //Draw the little dot inside the previous dot with the halfColor
+        //Draw the little dot inside the previous dot with the sideColor
         drawCircle(
-            halfColor, center = dotCenter, radius = radiusSmallDot
+            sideColor, center = dotCenter, radius = radiusSmallDot
         )
     }
 }
