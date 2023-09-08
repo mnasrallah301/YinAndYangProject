@@ -64,10 +64,26 @@ fun YinAndYangScreen() {
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center)
                 .padding(top = 32.dp),
-            radius = size,
-            angle = 0f,
-            radiusBigDots = pxSize / 20,
-            radiusSmallDots = pxSize / 80,
+            yin = {
+                YinOrYangSide(
+                    size = size,
+                    sideColor = Color.White,
+                    dotColor = Color.Black,
+                    angle = 180f,
+                    radiusBigDot = pxSize / 20,
+                    radiusSmallDot = pxSize / 80,
+                )
+            },
+            yang = {
+                YinOrYangSide(
+                    size = size,
+                    sideColor = Color.Black,
+                    dotColor = Color.White,
+                    angle = 0f,
+                    radiusBigDot = pxSize / 20,
+                    radiusSmallDot = pxSize / 80,
+                )
+            }
         )
         QuoteText(
             modifier = Modifier.padding(16.dp)
@@ -195,30 +211,28 @@ fun YinOrYangSide(
 @Composable
 fun YinAndYang(
     modifier: Modifier = Modifier,
-    radius: Dp = 300.dp,
-    angle: Float = 0f,
-    radiusBigDots: Float = LocalDensity.current.run { radius.toPx() } / 20,
-    radiusSmallDots: Float = LocalDensity.current.run { radius.toPx() } / 80,
+    yang: @Composable () -> Unit = {
+        YinOrYangSide(
+            size = 300.dp,
+            sideColor = Color.Black,
+            dotColor = Color.White,
+            angle = 0f,
+        )
+    },
+    yin: @Composable () -> Unit = {
+        YinOrYangSide(
+            size = 300.dp,
+            sideColor = Color.White,
+            dotColor = Color.Black,
+            angle = 180f,
+        )
+    },
 ) {
     BoxWithConstraints(modifier = modifier) {
         //Draw Yang side
-        YinOrYangSide(
-            size = radius,
-            sideColor = Color.Black,
-            dotColor = Color.White,
-            angle = angle,
-            radiusBigDot = radiusBigDots,
-            radiusSmallDot = radiusSmallDots,
-        )
+       yang()
         //Draw Yin side
-        YinOrYangSide(
-            size = radius,
-            sideColor = Color.White,
-            dotColor = Color.Black,
-            angle = angle + 180f,
-            radiusBigDot = radiusBigDots,
-            radiusSmallDot = radiusSmallDots,
-        )
+       yin()
     }
 }
 
