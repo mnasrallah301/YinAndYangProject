@@ -318,16 +318,12 @@ fun QuoteText(
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .rotate(20f)
-                    .graphicsLayer(rotationX = 180f)
                     .clip(YinOrYangSideShape)
                     .background(Color.Red)
             )
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .rotate(20f)
-                    .graphicsLayer(rotationX = 180f)
                     .clip(YinOrYangSideShape)
                     .background(Color.Red)
             )
