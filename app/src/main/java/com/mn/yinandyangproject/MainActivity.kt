@@ -7,7 +7,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -66,10 +65,10 @@ fun YinAndYangScreen() {
                 .padding(top = 32.dp),
             yin = {
                 YinOrYangSide(
+                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
                     size = size,
                     sideColor = Color.White,
                     dotColor = Color.Black,
-                    angle = 180f,
                     radiusBigDot = pxSize / 20,
                     radiusSmallDot = pxSize / 80,
                 )
@@ -79,13 +78,17 @@ fun YinAndYangScreen() {
                     size = size,
                     sideColor = Color.Black,
                     dotColor = Color.White,
-                    angle = 0f,
                     radiusBigDot = pxSize / 20,
                     radiusSmallDot = pxSize / 80,
                 )
             }
         )
         QuoteText(
+            quote = """
+        - Why did Yin go to therapy?
+        - To 'find herself.' And Yang?
+        - He was just there for the free coffee.
+    """.trimIndent(),
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -137,23 +140,19 @@ fun YinYangCompact() {
     )
 }
 
-@Preview
 @Composable
 fun YinOrYangSide(
     modifier: Modifier = Modifier,
     size: Dp = 200.dp,
     sideColor: Color = Color.Black,
     dotColor: Color = Color.White,
-    angle: Float = 0f,
     radiusBigDot: Float = LocalDensity.current.run { size.toPx() } / 20,
     radiusSmallDot: Float = LocalDensity.current.run { size.toPx() } / 80,
 ) {
     Canvas(
-        modifier = modifier
-            .requiredSize(size)
-            .rotate(angle)
+        modifier = modifier.requiredSize(size)
     ) {
-        val canvasSize = this.size.maxDimension
+        val canvasSize = this.size.minDimension
         val center = Offset(canvasSize / 2, canvasSize / 2)
         val radius = canvasSize / 2
         val path = Path().apply {
@@ -207,80 +206,111 @@ fun YinOrYangSide(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFffc802)
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun YinAndYang(
-    modifier: Modifier = Modifier,
-    yang: @Composable () -> Unit = {
+fun YinOrYangSidePreview() {
+    YinAndYangProjectTheme {
         YinOrYangSide(
-            size = 300.dp,
-            sideColor = Color.Black,
-            dotColor = Color.White,
-            angle = 0f,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
         )
-    },
-    yin: @Composable () -> Unit = {
-        YinOrYangSide(
-            size = 300.dp,
-            sideColor = Color.White,
-            dotColor = Color.Black,
-            angle = 180f,
-        )
-    },
-) {
-    BoxWithConstraints(modifier = modifier) {
-        //Draw Yang side
-       yang()
-        //Draw Yin side
-       yin()
     }
 }
 
-@Preview(showBackground = true)
+@Composable
+fun YinAndYang(
+    modifier: Modifier = Modifier,
+    yang: @Composable () -> Unit,
+    yin: @Composable () -> Unit,
+) {
+    Box(modifier = modifier) {
+        //Draw Yang side
+        yang()
+        //Draw Yin side
+        yin()
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFffc802)
+@Composable
+fun YinAndYangPreview() {
+    YinAndYangProjectTheme {
+        YinAndYang(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center),
+            yin = {
+                YinOrYangSide(
+                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
+                    size = 300.dp,
+                    sideColor = Color.White,
+                    dotColor = Color.Black,
+                )
+            },
+            yang = {
+                YinOrYangSide(
+                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
+                    size = 300.dp,
+                    sideColor = Color.Black,
+                    dotColor = Color.White,
+                )
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PepsiPreview() {
+    YinAndYangProjectTheme {
+        Pepsi(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
 @Composable
 fun Pepsi(
     modifier: Modifier = Modifier,
     radius: Dp = 300.dp
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentSize(Alignment.Center)
+        modifier = modifier
             .clip(CircleShape)
             .background(Color.White)
     ) {
         YinOrYangSide(
+            modifier = Modifier.graphicsLayer(rotationZ = 90f),
             size = radius,
             sideColor = Color.Red,
             dotColor = Color.White,
-            angle = 90f,
             radiusBigDot = 0f,
             radiusSmallDot = 0f,
         )
         YinOrYangSide(
-            modifier = Modifier.padding(top = radius / 4),
+            modifier = Modifier
+                .padding(top = radius / 4)
+                .graphicsLayer(rotationZ = 270f),
             size = radius,
             sideColor = Color.Blue,
             dotColor = Color.White,
-            angle = 270f,
             radiusBigDot = 0f,
             radiusSmallDot = 0f,
         )
     }
 }
 
-@Preview(showBackground = true)
 @Composable
 fun TomAndJerry(
     modifier: Modifier = Modifier,
     radius: Dp = 300.dp
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentSize(Alignment.Center)
+        modifier = modifier
     ) {
-
         Image(
             modifier = Modifier
                 .size(radius)
@@ -306,12 +336,20 @@ fun TomAndJerry(
 
 @Preview
 @Composable
+fun TomAndJerryPreview() {
+    YinAndYangProjectTheme {
+        TomAndJerry(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
+@Composable
 fun QuoteText(
-    modifier: Modifier = Modifier, quote: String = """
-        - Why did Yin go to therapy?
-        - To 'find herself.' And Yang?
-        - He was just there for the free coffee.
-    """.trimIndent()
+    quote: String,
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         Row {
@@ -319,23 +357,33 @@ fun QuoteText(
                 modifier = Modifier
                     .size(20.dp)
                     .clip(YinOrYangSideShape)
-                    .background(Color.Red)
+                    .background(MaterialTheme.colorScheme.primary)
             )
             Box(
                 modifier = Modifier
                     .size(20.dp)
                     .clip(YinOrYangSideShape)
-                    .background(Color.Red)
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
         Text(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
             color = Color.White,
             style = MaterialTheme.typography.headlineSmall,
-            text = """
-        Why did Yin go to therapy?
-        To 'find herself.' And Yang?
-        He was just there for the free coffee.
+            text = quote
+        )
+    }
+}
+
+@Preview
+@Composable
+fun QuoteTextPreview() {
+    YinAndYangProjectTheme {
+        QuoteText(
+            quote = """
+        - Why did Yin go to therapy?
+        - To 'find herself.' And Yang?
+        - He was just there for the free coffee.
     """.trimIndent()
         )
     }
