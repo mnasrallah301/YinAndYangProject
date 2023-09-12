@@ -64,9 +64,9 @@ fun YinAndYangScreen() {
                 .wrapContentSize(Alignment.Center)
                 .padding(top = 32.dp),
             yin = {
-                YinOrYangSide(
+                YinYangHalf(
                     modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    size = size,
+                    diameter = size,
                     sideColor = Color.White,
                     dotColor = Color.Black,
                     radiusBigDot = pxSize / 20,
@@ -74,8 +74,8 @@ fun YinAndYangScreen() {
                 )
             },
             yang = {
-                YinOrYangSide(
-                    size = size,
+                YinYangHalf(
+                    diameter = size,
                     sideColor = Color.Black,
                     dotColor = Color.White,
                     radiusBigDot = pxSize / 20,
@@ -141,16 +141,16 @@ fun YinYangCompact() {
 }
 
 @Composable
-fun YinOrYangSide(
+fun YinYangHalf(
     modifier: Modifier = Modifier,
-    size: Dp = 200.dp,
+    diameter: Dp = 200.dp,
     sideColor: Color = Color.Black,
     dotColor: Color = Color.White,
-    radiusBigDot: Float = LocalDensity.current.run { size.toPx() } / 20,
-    radiusSmallDot: Float = LocalDensity.current.run { size.toPx() } / 80,
+    radiusBigDot: Float = LocalDensity.current.run { diameter.toPx() } / 20,
+    radiusSmallDot: Float = LocalDensity.current.run { diameter.toPx() } / 80,
 ) {
     Canvas(
-        modifier = modifier.requiredSize(size)
+        modifier = modifier.requiredSize(diameter)
     ) {
         val canvasSize = this.size.minDimension
         val center = Offset(canvasSize / 2, canvasSize / 2)
@@ -210,7 +210,7 @@ fun YinOrYangSide(
 @Composable
 fun YinOrYangSidePreview() {
     YinAndYangProjectTheme {
-        YinOrYangSide(
+        YinYangHalf(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center)
@@ -241,17 +241,17 @@ fun YinAndYangPreview() {
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center),
             yin = {
-                YinOrYangSide(
+                YinYangHalf(
                     modifier = Modifier.graphicsLayer(rotationZ = 0f),
-                    size = 300.dp,
+                    diameter = 300.dp,
                     sideColor = Color.White,
                     dotColor = Color.Black,
                 )
             },
             yang = {
-                YinOrYangSide(
+                YinYangHalf(
                     modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    size = 300.dp,
+                    diameter = 300.dp,
                     sideColor = Color.Black,
                     dotColor = Color.White,
                 )
@@ -275,26 +275,26 @@ fun PepsiPreview() {
 @Composable
 fun Pepsi(
     modifier: Modifier = Modifier,
-    radius: Dp = 300.dp
+    diameter: Dp = 300.dp
 ) {
     Box(
         modifier = modifier
             .clip(CircleShape)
             .background(Color.White)
     ) {
-        YinOrYangSide(
+        YinYangHalf(
             modifier = Modifier.graphicsLayer(rotationZ = 90f),
-            size = radius,
+            diameter = diameter,
             sideColor = Color.Red,
             dotColor = Color.White,
             radiusBigDot = 0f,
             radiusSmallDot = 0f,
         )
-        YinOrYangSide(
+        YinYangHalf(
             modifier = Modifier
-                .padding(top = radius / 4)
+                .padding(top = diameter / 4)
                 .graphicsLayer(rotationZ = 270f),
-            size = radius,
+            diameter = diameter,
             sideColor = Color.Blue,
             dotColor = Color.White,
             radiusBigDot = 0f,
@@ -306,14 +306,14 @@ fun Pepsi(
 @Composable
 fun TomAndJerry(
     modifier: Modifier = Modifier,
-    radius: Dp = 300.dp
+    diameter: Dp = 300.dp
 ) {
     Box(
         modifier = modifier
     ) {
         Image(
             modifier = Modifier
-                .size(radius)
+                .size(diameter)
                 .rotate(180f)
                 .clip(YinOrYangSideShape)
                 .background(Color(0xFFd90c18))
@@ -323,7 +323,7 @@ fun TomAndJerry(
         )
         Image(
             modifier = Modifier
-                .size(radius)
+                .size(diameter)
                 .rotate(0f)
                 .clip(YinOrYangSideShape)
                 .background(Color(0xFFf89c0d))
