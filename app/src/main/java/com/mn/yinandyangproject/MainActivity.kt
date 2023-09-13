@@ -50,8 +50,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun YinAndYangScreen() {
-    val size = 300.dp
-    val pxSize = LocalDensity.current.run { size.toPx() }
+    val diameter = 300.dp
+    val pxSize = LocalDensity.current.run { diameter.toPx() }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,6 +59,7 @@ fun YinAndYangScreen() {
     )
     {
         YinAndYang(
+            diameter = diameter,
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center)
@@ -66,7 +67,7 @@ fun YinAndYangScreen() {
             yin = {
                 YinYangHalf(
                     modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    diameter = size,
+                    diameter = diameter,
                     sideColor = Color.White,
                     dotColor = Color.Black,
                     radiusBigDot = pxSize / 20,
@@ -75,7 +76,7 @@ fun YinAndYangScreen() {
             },
             yang = {
                 YinYangHalf(
-                    diameter = size,
+                    diameter = diameter,
                     sideColor = Color.Black,
                     dotColor = Color.White,
                     radiusBigDot = pxSize / 20,
@@ -94,57 +95,11 @@ fun YinAndYangScreen() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1e1f22)
-@Composable
-fun YinYangCompact() {
-    Canvas(
-        modifier = Modifier.size(200.dp),
-        onDraw = {
-            val canvasSize = size.minDimension
-            val center = Offset(canvasSize / 2, canvasSize / 2)
-            val radius = canvasSize / 2
-            val smallCircleRadius = radius / 2
-
-            // Draw the white (Yang) part
-            drawArc(
-                color = Color.White,
-                startAngle = -180f,
-                sweepAngle = 180f,
-                useCenter = true,
-                size = Size(radius * 2, radius * 2),
-                topLeft = Offset(center.x - radius, center.y - radius)
-            )
-
-            // Draw the black (Yin) part
-            drawArc(
-                color = Color.Black,
-                startAngle = 0f,
-                sweepAngle = 180f,
-                useCenter = true,
-                size = Size(radius * 2, radius * 2),
-                topLeft = Offset(center.x - radius, center.y - radius)
-            )
-
-            // Draw the small circles
-            drawCircle(
-                color = Color.Black,
-                radius = smallCircleRadius,
-                center = center.copy(x = center.x / 2)
-            )
-            drawCircle(
-                color = Color.White,
-                radius = smallCircleRadius,
-                center = center.copy(x = 3 * center.x / 2)
-            )
-        }
-    )
-}
-
 @Composable
 fun YinYangHalf(
+    diameter: Dp,
+    sideColor: Color,
     modifier: Modifier = Modifier,
-    diameter: Dp = 200.dp,
-    sideColor: Color = Color.Black,
     dotColor: Color = Color.White,
     radiusBigDot: Float = LocalDensity.current.run { diameter.toPx() } / 20,
     radiusSmallDot: Float = LocalDensity.current.run { diameter.toPx() } / 80,
@@ -206,69 +161,32 @@ fun YinYangHalf(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun YinOrYangSidePreview() {
-    YinAndYangProjectTheme {
-        YinYangHalf(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
-    }
-}
-
 @Composable
 fun YinAndYang(
+    diameter: Dp,
     modifier: Modifier = Modifier,
-    yang: @Composable () -> Unit,
-    yin: @Composable () -> Unit,
+    yang: @Composable () -> Unit = {
+        YinYangHalf(
+            modifier = Modifier.graphicsLayer(rotationZ = 0f),
+            diameter = diameter,
+            sideColor = Color.White,
+            dotColor = Color.Black,
+        )
+    },
+    yin: @Composable () -> Unit = {
+        YinYangHalf(
+            modifier = Modifier.graphicsLayer(rotationZ = 180f),
+            diameter = diameter,
+            sideColor = Color.Black,
+            dotColor = Color.White,
+        )
+    },
 ) {
     Box(modifier = modifier) {
         //Draw Yang side
         yang()
         //Draw Yin side
         yin()
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFffc802)
-@Composable
-fun YinAndYangPreview() {
-    YinAndYangProjectTheme {
-        YinAndYang(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center),
-            yin = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
-                    diameter = 300.dp,
-                    sideColor = Color.White,
-                    dotColor = Color.Black,
-                )
-            },
-            yang = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    diameter = 300.dp,
-                    sideColor = Color.Black,
-                    dotColor = Color.White,
-                )
-            }
-        )
-    }
-}
-
-@Preview
-@Composable
-fun PepsiPreview() {
-    YinAndYangProjectTheme {
-        Pepsi(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
     }
 }
 
@@ -334,18 +252,6 @@ fun TomAndJerry(
     }
 }
 
-@Preview
-@Composable
-fun TomAndJerryPreview() {
-    YinAndYangProjectTheme {
-        TomAndJerry(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
-    }
-}
-
 @Composable
 fun QuoteText(
     quote: String,
@@ -375,6 +281,73 @@ fun QuoteText(
     }
 }
 
+@Preview(showBackground = true, backgroundColor = 0xFFffc802)
+@Composable
+fun YinAndYangPreview() {
+    YinAndYangProjectTheme {
+        YinAndYang(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center),
+            diameter = 300.dp,
+            yin = {
+                YinYangHalf(
+                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
+                    diameter = 200.dp,
+                    sideColor = Color.White,
+                    dotColor = Color.Black,
+                )
+            },
+            yang = {
+                YinYangHalf(
+                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
+                    diameter = 200.dp,
+                    sideColor = Color.Red,
+                    dotColor = Color.White,
+                )
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun TomAndJerryPreview() {
+    YinAndYangProjectTheme {
+        TomAndJerry(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun YinYangHalfPreview() {
+    YinAndYangProjectTheme {
+        YinYangHalf(
+            diameter = 200.dp,
+            sideColor = Color.Black,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PepsiPreview() {
+    YinAndYangProjectTheme {
+        Pepsi(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
 @Preview
 @Composable
 fun QuoteTextPreview() {
@@ -387,6 +360,52 @@ fun QuoteTextPreview() {
     """.trimIndent()
         )
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF1e1f22)
+@Composable
+fun YinYangCompact() {
+    Canvas(
+        modifier = Modifier.size(200.dp),
+        onDraw = {
+            val canvasSize = size.minDimension
+            val center = Offset(canvasSize / 2, canvasSize / 2)
+            val radius = canvasSize / 2
+            val smallCircleRadius = radius / 2
+
+            // Draw the white (Yang) part
+            drawArc(
+                color = Color.White,
+                startAngle = -180f,
+                sweepAngle = 180f,
+                useCenter = true,
+                size = Size(radius * 2, radius * 2),
+                topLeft = Offset(center.x - radius, center.y - radius)
+            )
+
+            // Draw the black (Yin) part
+            drawArc(
+                color = Color.Black,
+                startAngle = 0f,
+                sweepAngle = 180f,
+                useCenter = true,
+                size = Size(radius * 2, radius * 2),
+                topLeft = Offset(center.x - radius, center.y - radius)
+            )
+
+            // Draw the small circles
+            drawCircle(
+                color = Color.Black,
+                radius = smallCircleRadius,
+                center = center.copy(x = center.x / 2)
+            )
+            drawCircle(
+                color = Color.White,
+                radius = smallCircleRadius,
+                center = center.copy(x = 3 * center.x / 2)
+            )
+        }
+    )
 }
 
 
