@@ -3,9 +3,18 @@ package com.mn.yinandyangproject
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.VectorConverter
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +28,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +42,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -36,6 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mn.yinandyangproject.ui.theme.YinAndYangProjectTheme
 import com.mn.yinandyangproject.ui.theme.YinOrYangSideShape
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,14 +64,95 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+enum class YinYangState {
+    Yin, Yang,
+}
+
+val jokes = listOf(
+    """
+        - Why did Yin go to therapy?
+        - To 'find herself.' And Yang?
+        - He was just there for the free coffee.
+    """.trimIndent(),
+    """
+        - Why did Yin and Yang start a podcast?
+        - Because the world definitely needed more 'balanced' opinions.
+        Yeah, right.
+        """.trimIndent(),
+    """
+        Oh, look, it's Yin, taking another 'mindful' nap, 
+        while Yang probably tried to break another world record... for no reason.
+        """.trimIndent(),
+    """
+        Oh great, Yin's meditating again. Maybe when she's done, 
+        she'll actually DO something... 
+        like Yang, who won't stop running in circles.""".trimIndent(),
+)
+
 @Composable
 fun YinAndYangScreen() {
     val diameter = 300.dp
     val pxSize = LocalDensity.current.run { diameter.toPx() }
+    var yinYangState by remember { mutableStateOf(YinYangState.Yang) }
+
+    val bgColor = remember {
+        Animatable(
+            Color(0xFF1e1f22), typeConverter = Color.VectorConverter(ColorSpaces.LinearSrgb)
+        )
+    }
+    val radiusDotMax = pxSize / 4 + 1
+    val radiusDotMin = pxSize / 20
+    val angle = remember {
+        Animatable(0f)
+    }
+    val radiusBigDot = remember {
+        Animatable(radiusDotMin)
+    }
+    val radiusSmallDot = remember {
+        Animatable(0f)
+    }
+
+    var joke by remember { mutableStateOf(jokes[0]) }
+
+    LaunchedEffect(yinYangState) {
+        launch {
+            bgColor.animateTo(
+                when (yinYangState) {
+                    YinYangState.Yang -> {
+                        Color(0xFF1e1f22)
+                    }
+
+                    YinYangState.Yin -> {
+                        Color(0xFFffc802)
+                    }
+                }, animationSpec = tween(3000)
+            )
+        }
+
+        launch {
+            angle.animateTo(
+                angle.value + 180f,
+                animationSpec = tween(3000),
+            )
+        }
+        launch {
+            radiusBigDot.animateTo(
+                if (yinYangState == YinYangState.Yin) radiusDotMax else radiusDotMin,
+                animationSpec = tween(3000),
+            )
+        }
+        launch {
+            radiusSmallDot.animateTo(
+                if (yinYangState == YinYangState.Yin) radiusDotMin else 0f,
+                animationSpec = tween(3000),
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1e1f22))
+            .background(bgColor.value)
     )
     {
         YinAndYang(
@@ -63,15 +160,23 @@ fun YinAndYangScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center)
-                .padding(top = 32.dp),
+                .padding(top = 32.dp)
+                .graphicsLayer(rotationZ = angle.value)
+                .clickable {
+                    joke = jokes.random()
+                    yinYangState = when (yinYangState) {
+                        YinYangState.Yin -> YinYangState.Yang
+                        YinYangState.Yang -> YinYangState.Yin
+                    }
+                },
             yin = {
                 YinYangHalf(
                     modifier = Modifier.graphicsLayer(rotationZ = 180f),
                     diameter = diameter,
                     sideColor = Color.White,
                     dotColor = Color.Black,
-                    radiusBigDot = pxSize / 20,
-                    radiusSmallDot = pxSize / 80,
+                    radiusBigDot = radiusBigDot.value,
+                    radiusSmallDot = radiusSmallDot.value
                 )
             },
             yang = {
@@ -79,19 +184,25 @@ fun YinAndYangScreen() {
                     diameter = diameter,
                     sideColor = Color.Black,
                     dotColor = Color.White,
-                    radiusBigDot = pxSize / 20,
-                    radiusSmallDot = pxSize / 80,
+                    radiusBigDot = radiusBigDot.value,
+                    radiusSmallDot = radiusSmallDot.value
                 )
             }
         )
-        QuoteText(
-            quote = """
-        - Why did Yin go to therapy?
-        - To 'find herself.' And Yang?
-        - He was just there for the free coffee.
-    """.trimIndent(),
-            modifier = Modifier.padding(16.dp)
-        )
+        AnimatedVisibility(
+            visible = !angle.isRunning,
+            enter = fadeIn() + expandHorizontally(),
+            exit = fadeOut() + shrinkHorizontally()
+        ) {
+            QuoteText(
+                quote = joke,
+                modifier = Modifier.padding(16.dp),
+                textColor = when (yinYangState) {
+                    YinYangState.Yin -> Color.Black
+                    YinYangState.Yang -> Color.White
+                }
+            )
+        }
     }
 }
 
@@ -101,8 +212,8 @@ fun YinYangHalf(
     sideColor: Color,
     modifier: Modifier = Modifier,
     dotColor: Color = Color.White,
-    radiusBigDot: Float = LocalDensity.current.run { diameter.toPx() } / 20,
-    radiusSmallDot: Float = LocalDensity.current.run { diameter.toPx() } / 80,
+    radiusBigDot: Float = 0f,
+    radiusSmallDot: Float = 0f,
 ) {
     Canvas(
         modifier = modifier.requiredSize(diameter)
@@ -257,6 +368,7 @@ fun TomAndJerry(
 fun QuoteText(
     quote: String,
     modifier: Modifier = Modifier,
+    textColor: Color = Color.White
 ) {
     Column(modifier = modifier) {
         Row {
@@ -275,7 +387,7 @@ fun QuoteText(
         }
         Text(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            color = Color.White,
+            color = textColor,
             style = MaterialTheme.typography.headlineSmall,
             text = quote
         )
