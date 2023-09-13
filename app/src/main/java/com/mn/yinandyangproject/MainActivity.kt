@@ -161,7 +161,6 @@ fun YinAndYangScreen() {
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center)
                 .padding(top = 32.dp)
-                .graphicsLayer(rotationZ = angle.value)
                 .clickable {
                     joke = jokes.random()
                     yinYangState = when (yinYangState) {
@@ -171,7 +170,7 @@ fun YinAndYangScreen() {
                 },
             yin = {
                 YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
+                    modifier = Modifier.graphicsLayer(rotationZ = angle.value + 180f),
                     diameter = diameter,
                     sideColor = Color.White,
                     dotColor = Color.Black,
@@ -181,6 +180,7 @@ fun YinAndYangScreen() {
             },
             yang = {
                 YinYangHalf(
+                    modifier = Modifier.graphicsLayer(rotationZ = angle.value),
                     diameter = diameter,
                     sideColor = Color.Black,
                     dotColor = Color.White,
