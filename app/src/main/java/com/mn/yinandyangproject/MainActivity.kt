@@ -197,11 +197,12 @@ fun Pepsi(
 ) {
     Box(
         modifier = modifier
+            .size(diameter)
             .clip(CircleShape)
             .background(Color.White)
     ) {
         YinYangHalf(
-            modifier = Modifier.graphicsLayer(rotationZ = 90f),
+            modifier = Modifier.graphicsLayer(rotationZ = 90f, scaleY = 2f, rotationY = 180f),
             diameter = diameter,
             sideColor = Color.Red,
             dotColor = Color.White,
@@ -210,8 +211,8 @@ fun Pepsi(
         )
         YinYangHalf(
             modifier = Modifier
-                .padding(top = diameter / 4)
-                .graphicsLayer(rotationZ = 270f),
+                .padding(top = diameter / 4, start = diameter / 3)
+                .graphicsLayer(rotationZ = 270f, scaleY = 2f, rotationY = 180f),
             diameter = diameter,
             sideColor = Color.Blue,
             dotColor = Color.White,
@@ -281,87 +282,6 @@ fun QuoteText(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFffc802)
-@Composable
-fun YinAndYangPreview() {
-    YinAndYangProjectTheme {
-        YinAndYang(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center),
-            diameter = 300.dp,
-            yin = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
-                    diameter = 200.dp,
-                    sideColor = Color.White,
-                    dotColor = Color.Black,
-                )
-            },
-            yang = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    diameter = 200.dp,
-                    sideColor = Color.Red,
-                    dotColor = Color.White,
-                )
-            }
-        )
-    }
-}
-
-@Preview
-@Composable
-fun TomAndJerryPreview() {
-    YinAndYangProjectTheme {
-        TomAndJerry(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
-    }
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
-fun YinYangHalfPreview() {
-    YinAndYangProjectTheme {
-        YinYangHalf(
-            diameter = 200.dp,
-            sideColor = Color.Black,
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
-    }
-}
-
-@Preview
-@Composable
-fun PepsiPreview() {
-    YinAndYangProjectTheme {
-        Pepsi(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentSize(Alignment.Center)
-        )
-    }
-}
-
-@Preview
-@Composable
-fun QuoteTextPreview() {
-    YinAndYangProjectTheme {
-        QuoteText(
-            quote = """
-        - Why did Yin go to therapy?
-        - To 'find herself.' And Yang?
-        - He was just there for the free coffee.
-    """.trimIndent()
-        )
-    }
-}
-
 @Preview(showBackground = true, backgroundColor = 0xFF1e1f22)
 @Composable
 fun YinYangCompact() {
@@ -408,4 +328,81 @@ fun YinYangCompact() {
     )
 }
 
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+fun YinYangHalfPreview() {
+    YinAndYangProjectTheme {
+        YinYangHalf(
+            diameter = 200.dp,
+            sideColor = Color.Black,
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFffc802)
+@Composable
+fun YinAndYangPreview() {
+    YinAndYangProjectTheme {
+        YinAndYang(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center),
+            diameter = 300.dp,
+            yin = {
+                YinYangHalf(
+                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
+                    diameter = 300.dp,
+                    sideColor = Color.White,
+                    dotColor = Color.Black,
+                )
+            },
+            yang = {
+                YinYangHalf(
+                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
+                    diameter = 300.dp,
+                    sideColor = Color.Black,
+                    dotColor = Color.White,
+                )
+            }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PepsiPreview() {
+    YinAndYangProjectTheme {
+        Pepsi(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun TomAndJerryPreview() {
+    YinAndYangProjectTheme {
+        TomAndJerry(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun QuoteTextPreview() {
+    YinAndYangProjectTheme {
+        QuoteText(
+            quote = """
+        - Why did Yin go to therapy?
+        - To 'find herself.' And Yang?
+        - He was just there for the free coffee.
+    """.trimIndent()
+        )
+    }
+}
 
