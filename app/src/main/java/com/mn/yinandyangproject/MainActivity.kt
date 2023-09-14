@@ -6,11 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.VectorConverter
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -93,15 +93,15 @@ val jokes = listOf(
 fun YinAndYangScreen() {
     val diameter = 300.dp
     val pxSize = LocalDensity.current.run { diameter.toPx() }
-    var yinYangState by remember { mutableStateOf(YinYangState.Yang) }
+    val radiusDotMax = pxSize / 4 + 1
+    val radiusDotMin = pxSize / 20
 
+    var yinYangState by remember { mutableStateOf(YinYangState.Yin) }
     val bgColor = remember {
         Animatable(
             Color(0xFF1e1f22), typeConverter = Color.VectorConverter(ColorSpaces.LinearSrgb)
         )
     }
-    val radiusDotMax = pxSize / 4 + 1
-    val radiusDotMin = pxSize / 20
     val angle = remember {
         Animatable(0f)
     }
@@ -112,38 +112,40 @@ fun YinAndYangScreen() {
         Animatable(0f)
     }
 
+    val shouldTextBeVisible = remember { MutableTransitionState(false) }
     var joke by remember { mutableStateOf(jokes[0]) }
 
     LaunchedEffect(yinYangState) {
         launch {
+            shouldTextBeVisible.targetState = false
+            angle.animateTo(
+                angle.value + 180f,
+                animationSpec = tween(3000),
+            )
+            shouldTextBeVisible.targetState = true
+        }
+        launch {
             bgColor.animateTo(
                 when (yinYangState) {
-                    YinYangState.Yang -> {
+                    YinYangState.Yin -> {
                         Color(0xFF1e1f22)
                     }
 
-                    YinYangState.Yin -> {
+                    YinYangState.Yang -> {
                         Color(0xFFffc802)
                     }
                 }, animationSpec = tween(3000)
             )
         }
-
-        launch {
-            angle.animateTo(
-                angle.value + 180f,
-                animationSpec = tween(3000),
-            )
-        }
         launch {
             radiusBigDot.animateTo(
-                if (yinYangState == YinYangState.Yin) radiusDotMax else radiusDotMin,
+                if (yinYangState == YinYangState.Yang) radiusDotMax else radiusDotMin,
                 animationSpec = tween(3000),
             )
         }
         launch {
             radiusSmallDot.animateTo(
-                if (yinYangState == YinYangState.Yin) radiusDotMin else 0f,
+                if (yinYangState == YinYangState.Yang) radiusDotMin else 0f,
                 animationSpec = tween(3000),
             )
         }
@@ -152,7 +154,9 @@ fun YinAndYangScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(bgColor.value)
+            .drawBehind {
+                drawRect(bgColor.value)
+            }
     )
     {
         YinAndYang(
@@ -168,38 +172,26 @@ fun YinAndYangScreen() {
                         YinYangState.Yang -> YinYangState.Yin
                     }
                 },
-            yin = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = angle.value + 180f),
-                    diameter = diameter,
-                    sideColor = Color.White,
-                    dotColor = Color.Black,
-                    radiusBigDot = radiusBigDot.value,
-                    radiusSmallDot = radiusSmallDot.value
-                )
+            yinModifier = Modifier.graphicsLayer {
+                rotationZ = angle.value
             },
-            yang = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = angle.value),
-                    diameter = diameter,
-                    sideColor = Color.Black,
-                    dotColor = Color.White,
-                    radiusBigDot = radiusBigDot.value,
-                    radiusSmallDot = radiusSmallDot.value
-                )
-            }
+            yangModifier = Modifier.graphicsLayer {
+                rotationZ = angle.value + 180f
+            },
+            radiusBigDotProvider = { radiusBigDot.value },
+            radiusSmallDotProvider = { radiusSmallDot.value }
         )
         AnimatedVisibility(
-            visible = !angle.isRunning,
-            enter = fadeIn() + expandHorizontally(),
-            exit = fadeOut() + shrinkHorizontally()
+            visibleState = shouldTextBeVisible,
+            enter = fadeIn(),
+            exit = fadeOut()
         ) {
             QuoteText(
                 quote = joke,
                 modifier = Modifier.padding(16.dp),
                 textColor = when (yinYangState) {
-                    YinYangState.Yin -> Color.Black
-                    YinYangState.Yang -> Color.White
+                    YinYangState.Yin -> Color.White
+                    YinYangState.Yang -> Color.Black
                 }
             )
         }
@@ -212,8 +204,12 @@ fun YinYangHalf(
     sideColor: Color,
     modifier: Modifier = Modifier,
     dotColor: Color = Color.White,
-    radiusBigDot: Float = 0f,
-    radiusSmallDot: Float = 0f,
+    radiusBigDotProvider: () -> Float = {
+        0f
+    },
+    radiusSmallDotProvider: () -> Float = {
+        0f
+    },
 ) {
     Canvas(
         modifier = modifier.requiredSize(diameter)
@@ -263,11 +259,11 @@ fun YinYangHalf(
         drawPath(path, color = sideColor)
         //Draw the dot inside the path with the dotColor
         drawCircle(
-            dotColor, center = dotCenter, radius = radiusBigDot
+            dotColor, center = dotCenter, radius = radiusBigDotProvider()
         )
         //Draw the little dot inside the previous dot with the sideColor
         drawCircle(
-            sideColor, center = dotCenter, radius = radiusSmallDot
+            sideColor, center = dotCenter, radius = radiusSmallDotProvider()
         )
     }
 }
@@ -276,28 +272,34 @@ fun YinYangHalf(
 fun YinAndYang(
     diameter: Dp,
     modifier: Modifier = Modifier,
-    yang: @Composable () -> Unit = {
-        YinYangHalf(
-            modifier = Modifier.graphicsLayer(rotationZ = 0f),
-            diameter = diameter,
-            sideColor = Color.White,
-            dotColor = Color.Black,
-        )
+    yinModifier: Modifier = Modifier.graphicsLayer(rotationZ = 0f),
+    yangModifier: Modifier = Modifier.graphicsLayer(rotationZ = 180f),
+    radiusBigDotProvider: () -> Float = {
+        0f
     },
-    yin: @Composable () -> Unit = {
-        YinYangHalf(
-            modifier = Modifier.graphicsLayer(rotationZ = 180f),
-            diameter = diameter,
-            sideColor = Color.Black,
-            dotColor = Color.White,
-        )
+    radiusSmallDotProvider: () -> Float = {
+        0f
     },
 ) {
     Box(modifier = modifier) {
         //Draw Yang side
-        yang()
+        YinYangHalf(
+            diameter = diameter,
+            modifier = yangModifier,
+            sideColor = Color.White,
+            dotColor = Color.Black,
+            radiusBigDotProvider = radiusBigDotProvider,
+            radiusSmallDotProvider = radiusSmallDotProvider
+        )
         //Draw Yin side
-        yin()
+        YinYangHalf(
+            diameter = diameter,
+            modifier = yinModifier,
+            sideColor = Color.Black,
+            dotColor = Color.White,
+            radiusBigDotProvider = radiusBigDotProvider,
+            radiusSmallDotProvider = radiusSmallDotProvider
+        )
     }
 }
 
@@ -317,8 +319,12 @@ fun Pepsi(
             diameter = diameter,
             sideColor = Color.Red,
             dotColor = Color.White,
-            radiusBigDot = 0f,
-            radiusSmallDot = 0f,
+            radiusBigDotProvider = {
+                0f
+            },
+            radiusSmallDotProvider = {
+                0f
+            },
         )
         YinYangHalf(
             modifier = Modifier
@@ -327,8 +333,12 @@ fun Pepsi(
             diameter = diameter,
             sideColor = Color.Blue,
             dotColor = Color.White,
-            radiusBigDot = 0f,
-            radiusSmallDot = 0f,
+            radiusBigDotProvider = {
+                0f
+            },
+            radiusSmallDotProvider = {
+                0f
+            },
         )
     }
 }
@@ -460,22 +470,8 @@ fun YinAndYangPreview() {
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center),
             diameter = 300.dp,
-            yin = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
-                    diameter = 300.dp,
-                    sideColor = Color.White,
-                    dotColor = Color.Black,
-                )
-            },
-            yang = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    diameter = 300.dp,
-                    sideColor = Color.Black,
-                    dotColor = Color.White,
-                )
-            }
+            yinModifier = Modifier.graphicsLayer(rotationZ = 0f),
+            yangModifier = Modifier.graphicsLayer(rotationZ = 180f),
         )
     }
 }
