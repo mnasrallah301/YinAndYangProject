@@ -168,26 +168,8 @@ fun YinAndYangScreen() {
                         YinYangState.Yang -> YinYangState.Yin
                     }
                 },
-            yin = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = angle.value + 180f),
-                    diameter = diameter,
-                    sideColor = Color.White,
-                    dotColor = Color.Black,
-                    radiusBigDot = radiusBigDot.value,
-                    radiusSmallDot = radiusSmallDot.value
-                )
-            },
-            yang = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = angle.value),
-                    diameter = diameter,
-                    sideColor = Color.Black,
-                    dotColor = Color.White,
-                    radiusBigDot = radiusBigDot.value,
-                    radiusSmallDot = radiusSmallDot.value
-                )
-            }
+            yinModifier = Modifier.graphicsLayer(rotationZ = angle.value + 180f),
+            yangModifier = Modifier.graphicsLayer(rotationZ = angle.value)
         )
         AnimatedVisibility(
             visible = !angle.isRunning,
@@ -212,8 +194,8 @@ fun YinYangHalf(
     sideColor: Color,
     modifier: Modifier = Modifier,
     dotColor: Color = Color.White,
-    radiusBigDot: Float = 0f,
-    radiusSmallDot: Float = 0f,
+    radiusBigDot: Float = LocalDensity.current.run { diameter.toPx() } / 20,
+    radiusSmallDot: Float = LocalDensity.current.run { diameter.toPx() } / 80,
 ) {
     Canvas(
         modifier = modifier.requiredSize(diameter)
@@ -276,28 +258,30 @@ fun YinYangHalf(
 fun YinAndYang(
     diameter: Dp,
     modifier: Modifier = Modifier,
-    yang: @Composable () -> Unit = {
-        YinYangHalf(
-            modifier = Modifier.graphicsLayer(rotationZ = 0f),
-            diameter = diameter,
-            sideColor = Color.White,
-            dotColor = Color.Black,
-        )
-    },
-    yin: @Composable () -> Unit = {
-        YinYangHalf(
-            modifier = Modifier.graphicsLayer(rotationZ = 180f),
-            diameter = diameter,
-            sideColor = Color.Black,
-            dotColor = Color.White,
-        )
-    },
+    yinModifier: Modifier = Modifier.graphicsLayer(rotationZ = 0f),
+    yangModifier: Modifier = Modifier.graphicsLayer(rotationZ = 180f),
+    radiusBigDot: Float = LocalDensity.current.run { diameter.toPx() } / 20,
+    radiusSmallDot: Float = LocalDensity.current.run { diameter.toPx() } / 80,
 ) {
     Box(modifier = modifier) {
-        //Draw Yang side
-        yang()
         //Draw Yin side
-        yin()
+        YinYangHalf(
+            diameter = diameter,
+            modifier = yinModifier,
+            sideColor = Color.White,
+            dotColor = Color.Black,
+            radiusBigDot = radiusBigDot,
+            radiusSmallDot = radiusSmallDot,
+        )
+        //Draw Yang side
+        YinYangHalf(
+            diameter = diameter,
+            modifier = yangModifier,
+            sideColor = Color.Black,
+            dotColor = Color.White,
+            radiusBigDot = radiusBigDot,
+            radiusSmallDot = radiusSmallDot,
+        )
     }
 }
 
@@ -460,22 +444,8 @@ fun YinAndYangPreview() {
                 .fillMaxWidth()
                 .wrapContentSize(Alignment.Center),
             diameter = 300.dp,
-            yin = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 0f),
-                    diameter = 300.dp,
-                    sideColor = Color.White,
-                    dotColor = Color.Black,
-                )
-            },
-            yang = {
-                YinYangHalf(
-                    modifier = Modifier.graphicsLayer(rotationZ = 180f),
-                    diameter = 300.dp,
-                    sideColor = Color.Black,
-                    dotColor = Color.White,
-                )
-            }
+            yinModifier = Modifier.graphicsLayer(rotationZ = 0f),
+            yangModifier = Modifier.graphicsLayer(rotationZ = 180f)
         )
     }
 }
