@@ -169,7 +169,9 @@ fun YinAndYangScreen() {
                     }
                 },
             yinModifier = Modifier.graphicsLayer(rotationZ = angle.value + 180f),
-            yangModifier = Modifier.graphicsLayer(rotationZ = angle.value)
+            yangModifier = Modifier.graphicsLayer(rotationZ = angle.value),
+            radiusBigDot = radiusBigDot.value,
+            radiusSmallDot = radiusSmallDot.value
         )
         AnimatedVisibility(
             visible = !angle.isRunning,
