@@ -18,7 +18,7 @@ Explore the `part_animation` branch to learn various animation techniques in Com
 
 ### 3. `part_recomposition`
 
-The `part_recomposition` branch focuses on taking your animations to the next level by optimizing them for better performance. Discover techniques to reduce recomposition and ensure a smoother and more efficient animation experience.
+The `part_recomposition` branch focuses on taking the animation to the next level by optimizing it for better performance. Discover techniques to reduce recomposition and ensure a smoother and more efficient animation experience.
 
 ![Optimize Animation](screenshots/performance.png)
 
